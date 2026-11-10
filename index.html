@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>목포시청 Codex 업무자동화 실습워크북</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --navy:#0B2E4F;--navy2:#123E66;--blue:#0E6BA8;--blue2:#2B8CCB;--sky:#E8F2F9;--sky2:#F5F9FC;
+  --green:#4CAF2E;--green2:#EAF6E4;--coral:#E0632E;--coral2:#FDF0E8;--gold:#F2B33D;--gold2:#FFF7E3;
+  --ink:#16293A;--body:#3F5466;--muted:#728597;--line:#DCE6EE;--bg:#F1F6FA;--code:#0A2540;
+  --shadow:0 14px 40px rgba(11,46,79,.08);--r:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif;font-size:16px;line-height:1.7;word-break:keep-all;overflow-wrap:break-word}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:var(--blue);text-underline-offset:3px}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:20px;padding:12px 24px;background:linear-gradient(100deg,var(--navy) 0%,#0F4472 60%,#0E6BA8 100%);color:#fff;box-shadow:0 6px 22px rgba(11,46,79,.25)}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brand .pill{background:#fff;border-radius:30px;padding:6px 14px;display:flex;align-items:center}
+.brand .pill img{height:26px;display:block}
+.brand b{font-size:16.5px;letter-spacing:-.3px;line-height:1.3}
+.brand small{display:block;font-size:12px;color:#BFD6EA;font-weight:500}
+.progress{display:flex;align-items:center;gap:12px;flex:1;min-width:120px}
+.track{height:9px;flex:1;border-radius:99px;background:rgba(255,255,255,.18);overflow:hidden}
+.track i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#9FD27F,var(--green));transition:width .3s}
+#count{font-size:13px;font-weight:700;white-space:nowrap}
+.top-actions{display:flex;gap:8px}
+.top-actions button{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.06);color:#fff;border-radius:10px;padding:7px 12px;font-weight:700;font-size:13px}
+.top-actions button:hover{background:rgba(255,255,255,.16)}
+#menuBtn{display:none}
+
+/* layout */
+.layout{display:grid;grid-template-columns:292px minmax(0,1fr);max-width:1480px;margin:auto}
+aside{position:sticky;top:62px;height:calc(100vh - 62px);overflow:auto;padding:22px 14px 60px;background:#fff;border-right:1px solid var(--line)}
+.phase{display:flex;align-items:center;gap:8px;margin:20px 10px 8px;font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--blue)}
+.phase:first-child{margin-top:0}
+.phase i{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.nav{width:100%;display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:center;border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:12px;color:var(--body);font-size:14.5px;font-weight:600}
+.nav span{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--sky);color:var(--blue);font-size:12.5px;font-weight:800}
+.nav:hover{background:var(--sky2)}
+.nav.active{background:var(--sky);color:var(--navy)}
+.nav.active span{background:var(--blue);color:#fff}
+.nav.done span{background:var(--green);color:#fff}
+.nav.done span::after{content:"✓"}
+.nav.done span b{display:none}
+main{min-width:0;padding:30px clamp(16px,4vw,54px) 110px}
+
+/* step */
+.step{display:none;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.step.show{display:block;animation:rise .25s ease}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero{position:relative;padding:32px 38px 28px;background:linear-gradient(135deg,#F7FBFE 0%,#E7F1F9 70%,#E9F6E4 100%);border-bottom:1px solid var(--line);overflow:hidden}
+.hero svg.wave{position:absolute;right:-20px;bottom:-6px;width:420px;opacity:.55;pointer-events:none}
+.hero.dark{background:linear-gradient(120deg,var(--navy) 0%,#0F4472 70%,#0E6BA8 100%);color:#fff;border-bottom:0}
+.hero.dark .lead{color:#CFE0EE}
+.eyebrow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;position:relative}
+.tag{display:inline-flex;align-items:center;border-radius:99px;padding:3px 12px;font-size:12.5px;font-weight:800;background:var(--navy);color:#fff}
+.tag.light{background:#fff;color:var(--blue);border:1px solid #CFE0EE}
+.tag.time{background:var(--green2);color:#2E7A17}
+.tag.p1{background:#0E6BA8}.tag.p2{background:#E0632E}.tag.p3{background:#2E8B57}.tag.p4{background:#6B4FBB}
+h1,h2,h3,h4{line-height:1.35;letter-spacing:-.5px;margin:0}
+h1{font-size:32px;margin-bottom:10px;position:relative}
+h2{font-size:27px;margin-bottom:8px;position:relative}
+h3{font-size:19px;color:var(--navy);margin:26px 0 10px}
+.lead{font-size:16.5px;color:var(--body);margin:0;max-width:880px;position:relative}
+.content{padding:26px 38px 12px}
+.muted{color:var(--muted)} .mini{font-size:13.5px}
+.footer-nav{display:flex;justify-content:space-between;gap:10px;padding:20px 38px 26px;margin-top:26px;border-top:1px solid var(--line);background:var(--sky2)}
+.right{display:flex;gap:8px}
+.btn{border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:11px;padding:10px 16px;font-weight:700;white-space:nowrap}
+.btn:hover{background:var(--sky)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:#0B5A8F}
+.linkbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:6px 0 18px}
+.linkbtn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;padding:12px 18px;font-size:15.5px}
+.dlbox{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:16px 0 10px;padding:16px 20px;border-radius:16px;background:linear-gradient(110deg,#EAF4FB,#EEF8E9);border:1px solid #CFE2EF}
+.dlbox b{color:var(--navy)}.dlbox span{display:block;font-size:14px;color:var(--body);margin-top:2px}
+.dlrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0 6px}
+@media (max-width:640px){.dlbox{flex-direction:column;align-items:flex-start}}
+.btn.green{background:var(--green);border-color:var(--green);color:#fff}
+
+/* grid & cards */
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:18px 20px}
+.card.tint{background:var(--sky2)}
+.card strong{color:var(--navy)}
+.card p{margin:6px 0 0;color:var(--body);font-size:15px}
+.ico{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;color:#fff;font-weight:900;font-size:18px}
+.ico.c1{background:linear-gradient(135deg,#2B8CCB,#0E6BA8)}.ico.c2{background:linear-gradient(135deg,#F08A4B,#E0632E)}
+.ico.c3{background:linear-gradient(135deg,#5CC16E,#2E8B57)}.ico.c4{background:linear-gradient(135deg,#8C6FE0,#6B4FBB)}
+.practice{position:relative;border-radius:18px;padding:22px;color:#fff;overflow:hidden;min-height:190px;cursor:pointer;border:0;text-align:left}
+.practice h4{font-size:20px;margin:6px 0 6px}
+.practice p{font-size:14.5px;margin:0;color:rgba(255,255,255,.86)}
+.practice .no{font-size:13px;font-weight:800;letter-spacing:.08em;opacity:.85}
+.practice .min{position:absolute;right:18px;top:18px;font-size:12.5px;font-weight:800;background:rgba(255,255,255,.18);padding:3px 10px;border-radius:20px}
+.practice::after{content:"";position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.12)}
+.pr1{background:linear-gradient(140deg,#1C7FC0,#0B4F84)}.pr2{background:linear-gradient(140deg,#F08A4B,#C9471C)}
+.pr3{background:linear-gradient(140deg,#4DB86A,#1F6E44)}.pr4{background:linear-gradient(140deg,#8C6FE0,#4B3399)}
+
+.callout{margin:16px 0;border-radius:14px;padding:14px 18px;background:var(--sky);color:var(--navy);font-size:15px}
+.callout.good{background:var(--green2);color:#245E12}
+.callout.warn{background:var(--gold2);color:#7A5300}
+.callout.danger{background:var(--coral2);color:#8A3412}
+.callout strong{font-weight:800}
+
+/* flow */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+.flow .node{position:relative;border-radius:14px;background:var(--sky2);border:1px solid var(--line);padding:14px 16px;font-size:14.5px}
+.flow .node b{display:block;color:var(--blue);font-size:12.5px;letter-spacing:.06em;margin-bottom:2px}
+.flow .node:not(:last-child)::after{content:"";position:absolute;right:-11px;top:50%;width:10px;height:10px;border-top:2px solid var(--blue2);border-right:2px solid var(--blue2);transform:translateY(-50%) rotate(45deg)}
+
+/* code / prompt */
+.code{position:relative;margin:12px 0 18px;border-radius:16px;background:var(--code);color:#E3EEF8;padding:44px 20px 18px;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif;font-size:14.5px;line-height:1.75;white-space:pre-wrap;overflow:auto;max-height:560px;border:1px solid #13385C}
+.code .label{position:absolute;left:16px;top:12px;font-size:12px;font-weight:800;letter-spacing:.06em;color:#9FD27F}
+.copy{position:absolute;right:12px;top:9px;border:0;border-radius:9px;background:#9FD27F;color:var(--navy);font-weight:800;font-size:13px;padding:5px 12px}
+.copy:hover{background:#B9E39E}
+.code.big{max-height:720px}
+
+/* checks & fields */
+.check{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin:8px 0;background:#fff;cursor:pointer}
+.check:hover{background:var(--sky2)}
+.check input{width:19px;height:19px;margin-top:3px;accent-color:var(--green);flex:none}
+.check small{display:block;color:var(--muted);font-size:13.5px}
+.check:has(input:checked){border-color:#BFE0AE;background:var(--green2)}
+.field{display:block;font-weight:800;color:var(--navy);margin:16px 0 6px;font-size:15px}
+.field small{font-weight:500;color:var(--muted);margin-left:6px}
+input[type=text],textarea,select{width:100%;border:1px solid #C9D8E4;border-radius:12px;padding:11px 13px;background:#fff;color:var(--ink)}
+textarea{min-height:84px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:3px solid #CFE6F6;border-color:var(--blue2)}
+.color{display:flex;gap:8px;align-items:center}
+.color input[type=color]{width:48px;height:44px;border:1px solid #C9D8E4;border-radius:10px;padding:3px;background:#fff;flex:none}
+.presets{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:8px 0}
+.preset{border:2px solid var(--line);border-radius:14px;padding:12px;background:#fff;text-align:left}
+.preset.on{border-color:var(--blue);box-shadow:0 0 0 3px #D6EAF7}
+.preset .sw{display:flex;gap:4px;margin-bottom:8px}.preset .sw i{flex:1;height:26px;border-radius:7px}
+.preset b{font-size:14.5px;color:var(--navy)}.preset small{display:block;font-size:12.5px;color:var(--muted)}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.opts .check{margin:0}
+
+/* tables */
+table.tb{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14.5px;margin:10px 0}
+.tb th{background:var(--navy);color:#fff;text-align:left;padding:10px 12px;font-weight:700}
+.tb td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+.tb tr:nth-child(even) td{background:var(--sky2)}
+.tb td:first-child{font-weight:700;color:var(--navy);white-space:nowrap}
+
+/* preview */
+.preview{border-radius:18px;overflow:hidden;border:1px solid var(--line);margin:12px 0}
+.pv-head{padding:16px 20px;color:#fff;display:flex;align-items:center;gap:12px}
+.pv-logo{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-weight:900}
+.pv-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px;background:var(--sky2)}
+.pv-kpi{background:#fff;border-radius:12px;padding:12px 14px;border:1px solid var(--line)}
+.pv-kpi small{color:var(--muted);font-size:12px}.pv-kpi b{display:block;font-size:20px}
+.pv-kpi i{font-style:normal;font-size:12.5px;font-weight:800}
+.record{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center;margin:8px 0}
+.record label{font-weight:700;color:var(--navy)}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;font-weight:700;opacity:0;transition:.2s;z-index:60;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+@media (max-width:1280px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1000px){
+  .layout{grid-template-columns:1fr}
+  aside{position:fixed;left:0;top:62px;width:290px;z-index:35;transform:translateX(-100%);transition:.2s;box-shadow:var(--shadow)}
+  aside.open{transform:none}
+  #menuBtn{display:inline-block}
+  .g3,.g4,.presets{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flow{grid-template-columns:1fr 1fr}
+  .flow .node::after{display:none}
+}
+@media (max-width:640px){
+  .g2,.g3,.g4,.opts,.presets,.pv-body{grid-template-columns:1fr}
+  .hero,.content{padding-left:20px;padding-right:20px}
+  .footer-nav{padding:16px 20px}
+  .progress{display:none}
+  .topbar{gap:10px;padding:10px 14px}
+  .brand>div,#printBtn{display:none}
+  .brand{flex:1}
+  .record{grid-template-columns:1fr}
+  h1{font-size:26px}h2{font-size:22px}
+}
+@media print{
+  .topbar,aside,.footer-nav,.copy{display:none!important}
+  .layout{display:block}
+  .step{display:block!important;box-shadow:none;break-after:page;margin-bottom:20px}
+  .code{max-height:none;background:#fff;color:#111;border:1px solid #999}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button id="menuBtn" class="btn" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.4)">목차</button>
+  <div class="brand"><span class="pill"><img src="data:image/png;base64,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" alt="목포시"></span><div><b>Codex 업무자동화 실습워크북</b><small>목포시청 생성형 AI 활용교육 · 2026. 11. 23.</small></div></div>
+  <div class="progress"><div class="track"><i id="bar"></i></div><span id="count">0 / 0 완료</span></div>
+  <div class="top-actions"><button id="printBtn">인쇄·PDF</button><button id="resetBtn">초기화</button></div>
+</header>
+
+<div class="layout">
+<aside id="side">
+  <div class="phase"><i></i>START</div>
+  <button class="nav" data-go="s0"><span><b>0</b></span>오늘의 실습 한눈에</button>
+  <button class="nav" data-go="s1"><span><b>1</b></span>Codex 준비·공통 지침</button>
+  <div class="phase"><i></i>실습 1 · 문서 정리</div>
+  <button class="nav" data-go="s2"><span><b>2</b></span>정리 방법 3가지 제안</button>
+  <button class="nav" data-go="s3"><span><b>3</b></span>골라서 실행·결과 기록</button>
+  <div class="phase"><i></i>실습 2 · 영수증 엑셀</div>
+  <button class="nav" data-go="s4"><span><b>4</b></span>영수증 → 정산표</button>
+  <button class="nav" data-go="s5"><span><b>5</b></span>검토·결재 양식</button>
+  <div class="phase"><i></i>실습 3 · 현장 안전점검</div>
+  <button class="nav" data-go="s6"><span><b>6</b></span>사진 → 결과보고서</button>
+  <button class="nav" data-go="s7"><span><b>7</b></span>검토·요약 보고</button>
+  <div class="phase"><i></i>실습 4 · KOSIS 챗봇</div>
+  <button class="nav" data-go="s8"><span><b>8</b></span>빈 폴더·인증키 준비</button>
+  <button class="nav" data-go="s9"><span><b>9</b></span>프롬프트 ① 만들기</button>
+  <button class="nav" data-go="s10"><span><b>10</b></span>프롬프트 ② 키 연결</button>
+  <button class="nav" data-go="s11"><span><b>11</b></span>프롬프트 ③ 검증·배포</button>
+  <button class="nav" data-go="s12"><span><b>12</b></span>도전 과제 · 제미나이</button>
+  <div class="phase"><i></i>FINISH</div>
+  <button class="nav" data-go="s13"><span><b>13</b></span>결과 기록·마무리</button>
+</aside>
+
+<main>
+<!-- ================= S0 ================= -->
+<section class="step" id="s0">
+  <div class="hero dark">
+    <svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg>
+    <div class="eyebrow"><span class="tag" style="background:#9FD27F;color:#0B2E4F">실습워크북</span><span class="tag light">1인 1PC</span><span class="tag light">총 약 100분</span></div>
+    <h1>말로 지시하면 Codex가 업무를 끝까지 처리합니다</h1>
+    <p class="lead">오늘은 코드를 직접 짜지 않습니다. 아래 요청문을 복사해 Codex에 붙여 넣고, 결과를 검토하고, 고칠 점을 다시 말로 지시합니다. 체크한 항목과 입력값은 이 브라우저에만 저장됩니다.</p>
+  </div>
+  <div class="content">
+    <h3>오늘의 실습 4가지</h3>
+    <div class="grid g4">
+      <button class="practice pr1" data-go="s2"><span class="min">15분</span><div class="no">PRACTICE 1</div><h4>문서·폴더 정리 자동화</h4><p>뒤죽박죽 다운로드 폴더를 업무별로 분류하고 파일명 규칙을 일괄 적용</p></button>
+      <button class="practice pr2" data-go="s4"><span class="min">20분</span><div class="no">PRACTICE 2</div><h4>영수증 → 엑셀 정산표</h4><p>스캔한 영수증 6장을 읽어 분류별 합계까지 들어간 정산표 완성</p></button>
+      <button class="practice pr3" data-go="s6"><span class="min">20분</span><div class="no">PRACTICE 3</div><h4>현장 안전점검 보고서</h4><p>현장사진 3장과 메모로 빈 양식을 채워 결과보고서 자동 작성</p></button>
+      <button class="practice pr4" data-go="s8"><span class="min">45분</span><div class="no">PRACTICE 4</div><h4>KOSIS 행정통계 챗봇</h4><p>국가통계포털 API로 목포시 통계를 조회·시각화하는 웹 챗봇 제작·배포</p></button>
+    </div>
+    <h3>Codex에게 일을 맡기는 4단계</h3>
+    <div class="flow">
+      <div class="node"><b>01 연결</b>작업 폴더를 프로젝트로 연결</div>
+      <div class="node"><b>02 지시</b>목표·입력·결과물·검토기준을 담은 요청문</div>
+      <div class="node"><b>03 검토</b>결과 파일을 열어 원본과 대조</div>
+      <div class="node"><b>04 수정</b>고칠 점을 한 번에 하나씩 다시 지시</div>
+    </div>
+    <h3>실습 파일 한 번에 받기</h3>
+    <div class="dlrow">
+      <a class="btn linkbtn" href="downloads/practice1_folder.zip" download>① 정리할폴더_다운로드 ↓</a>
+      <a class="btn linkbtn" href="downloads/practice2_receipts.zip" download>② 영수증정산 ↓</a>
+      <a class="btn linkbtn" href="downloads/practice3_safety.zip" download>③ 현장안전점검보고서 ↓</a>
+      <span class="muted mini">실습 ④ 챗봇은 빈 폴더에서 시작하므로 받을 파일이 없습니다</span>
+    </div>
+    <h3>시작 전 확인</h3>
+    <label class="check"><input type="checkbox" data-save="pre1"><span>실습 파일 3개를 내려받아 압축을 풀었다<small>각 실습 단계에서도 따로 받을 수 있습니다.</small></span></label>
+    <label class="check"><input type="checkbox" data-save="pre2"><span>Codex 데스크톱 앱에 ChatGPT 계정으로 로그인했다</span></label>
+    <label class="check"><input type="checkbox" data-save="pre3"><span>실습 자료의 업체·인명·시설명은 모두 교육용 가상 정보임을 확인했다<small>실제 개인정보·내부 문서는 실습에 넣지 않습니다.</small></span></label>
+  </div>
+  <div class="footer-nav"><span></span><div class="right"><button class="btn primary" data-next>시작하기</button></div></div>
+</section>
+
+<!-- ================= S1 ================= -->
+<section class="step" id="s1">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag">STEP 1</span><span class="tag light">공통 준비</span><span class="tag time">5분</span></div>
+    <h2>Codex 공통 지침을 한 번만 등록합니다</h2><p class="lead">설정 &gt; 개인 맞춤 설정 &gt; Codex 지침 칸에 아래 내용을 통째로 붙여 넣고 저장합니다. 모든 실습에 같은 원칙이 적용됩니다.</p></div>
+  <div class="content">
+    <div class="grid g3">
+      <div class="card tint"><div class="ico c1">1</div><strong>설정 열기</strong><p>왼쪽 아래 프로필 → 설정 (Ctrl + ,)</p></div>
+      <div class="card tint"><div class="ico c3">2</div><strong>개인 맞춤 설정</strong><p>Codex 지침 칸에 아래 지침 붙여넣기 → 저장</p></div>
+      <div class="card tint"><div class="ico c2">3</div><strong>데이터 관리</strong><p>모델 개선을 위한 데이터 학습 허용 → 끄기</p></div>
+    </div>
+    <div class="code big"><span class="label">COPY · CODEX 공통 지침</span><button class="copy">복사</button>1. 기본 원칙
+모든 답변과 결과물은 한국어로 작성한다.
+핵심 결론과 바로 사용할 수 있는 결과물을 먼저 제시한다.
+불필요한 서론, 배경, 반복 설명은 생략한다.
+
+2. 공공기관 업무 원칙
+목포시청 행정 문서 문체(개조식, &#x27;~함&#x27;, &#x27;~임&#x27; 종결)를 기본으로 한다.
+개인정보(성명, 주민등록번호, 연락처, 주소, 계좌번호)는 결과물에 그대로 옮기지 않고 필요 시 가린다(예: 김**, 010-****-1234).
+확인되지 않은 수치, 법령, 출처는 만들지 않는다. 모르는 것은 &quot;확인 필요&quot;로 표시한다.
+
+3. 파일 작업 원칙
+원본 파일은 절대 삭제하거나 덮어쓰지 않는다. 수정이 필요하면 사본을 만든 뒤 작업한다.
+파일을 이동·이름 변경하기 전에는 계획표를 먼저 보여 주고 승인을 받는다.
+작업이 끝나면 만든 파일 목록과 저장 위치를 정리해서 알려 준다.
+엑셀은 첫 행을 머리글로 고정하고, 금액 열은 천 단위 쉼표 서식을 적용한다.
+
+4. 검토 원칙
+결과물을 보고하기 전에 합계, 건수, 날짜를 원본과 한 번 더 대조한다.
+판독이 불확실한 값은 임의로 채우지 않고 &#x27;확인필요&#x27;로 표시하고 그 이유를 적는다.</div>
+    <div class="callout warn"><strong>권한(승인) 설정:</strong> 실습 파일처럼 가상 자료만 다룰 때는 '나 대신 승인'을 켜도 됩니다. 실제 업무 폴더·개인정보 파일·프로그램 설치가 걸린 작업은 끄고 직접 승인합니다.</div>
+    <label class="check"><input type="checkbox" data-save="s1a"><span>공통 지침을 붙여 넣고 저장했다</span></label>
+    <label class="check"><input type="checkbox" data-save="s1b"><span>데이터 학습 허용을 껐다</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>준비 완료</button></div></div>
+</section>
+
+<!-- ================= S2 ================= -->
+<section class="step" id="s2">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p1">PRACTICE 1</span><span class="tag light">문서·폴더 정리 자동화</span><span class="tag time">STEP 1 · 7분</span></div>
+    <h2>정리 방법 3가지를 먼저 제안받습니다</h2><p class="lead">짧게 물어보고, Codex가 내놓은 세 가지 방법을 비교합니다. 파일은 아직 건드리지 않게 합니다.</p></div>
+  <div class="content">
+    <table class="tb"><tr><th>항목</th><th>내용</th></tr>
+      <tr><td>프로젝트 폴더</td><td>4_Codex활용기초실습 \ 실습4-1_폴더정리 \ <b>정리할폴더_다운로드</b></td></tr>
+      <tr><td>들어 있는 파일</td><td>약 35개 · 보고서(docx), 엑셀, PDF, 사진, 캡처, 중복본, '최종_진짜최종', 임시파일(~$), 빈 문서</td></tr>
+      <tr><td>결과물</td><td>STEP 1 정리 방법 3가지 → STEP 2 고른 방법으로 정리 + 폴더정리_결과.xlsx</td></tr></table>
+    <div class="dlbox">
+      <div><b>실습 파일 내려받기</b><span>파일 33개 · 0.5MB · 압축을 풀면 <b>정리할폴더_다운로드</b> 폴더가 나옵니다</span></div>
+      <a class="btn primary linkbtn" href="downloads/practice1_folder.zip" download>ZIP 다운로드 ↓</a>
+    </div>
+    <p class="muted mini" style="margin:-6px 0 14px">다운로드 → 압축 풀기(우클릭 &gt; 모두 압축 풀기) → 바탕화면으로 옮기기 → Codex [프로젝트 선택]에서 <b>정리할폴더_다운로드</b> 폴더 연결</p>
+    <h3>STEP 1 요청문 · 정리 방법 3가지 제안</h3>
+    <div class="code"><span class="label">COPY · 정리 방법 제안</span><button class="copy">복사</button>이 폴더의 파일을 정리하려고 해.
+정리 방법 3가지를 제안해 줘.
+
+방법마다 폴더 구조 예시와 장단점을 짧게 보여 주고,
+아직 파일은 옮기지 마.</div>
+    <div class="callout"><strong>비교 포인트:</strong> 업무별 · 날짜별 · 파일 종류별처럼 서로 다른 방법이 나왔는지, 중복·임시 파일 처리 방법이 들어 있는지 보세요. 마음에 드는 방법이 없으면 "업무별로 나누되 날짜를 파일명 앞에 붙이는 방법도 넣어 줘"처럼 다시 요청합니다.</div>
+    <label class="check"><input type="checkbox" data-save="p1a"><span>정리 방법 3가지를 받았고, 파일이 그대로인 것을 확인했다</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>다음 단계</button></div></div>
+</section>
+
+<!-- ================= S3 ================= -->
+<section class="step" id="s3">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p1">PRACTICE 1</span><span class="tag light">골라서 실행 → 결과 기록</span><span class="tag time">STEP 2 · 8분</span></div>
+    <h2>원하는 방법을 골라 실행을 지시합니다</h2><p class="lead">번호를 고르면 요청문에 자동으로 들어갑니다. 원본은 먼저 백업하고, 삭제 없이 이동과 이름 변경만 하게 합니다.</p></div>
+  <div class="content">
+    <label class="field" for="p1Pick">실행할 방법<small>STEP 1에서 제안받은 번호</small></label>
+    <select id="p1Pick" data-field><option value="1">1번 방법</option><option value="2" selected>2번 방법</option><option value="3">3번 방법</option></select>
+    <h3>STEP 2 요청문 · 골라서 실행</h3>
+    <div class="code"><span class="label">COPY · 실행 (선택값 자동 반영)</span><button class="copy">복사</button><span id="p1Prompt"></span></div>
+    <h3>도전 · 다음에도 쓰는 자동 정리 도구</h3>
+    <div class="code"><span class="label">COPY · 도전</span><button class="copy">복사</button>방금 정리한 방법 그대로, 앞으로 새 파일이 생길 때마다 정리할 수 있게
+더블클릭하면 실행되는 '폴더정리_자동실행.bat' 파일과 사용법.txt를 만들어 줘.
+실행하면 먼저 변경 계획만 보여 주고, Y를 눌러야 실제로 옮기도록 해 줘.</div>
+    <label class="check"><input type="checkbox" data-save="p1b"><span>_원본백업 폴더가 생성되고 원본 35개가 그대로 있다</span></label>
+    <label class="check"><input type="checkbox" data-save="p1c"><span>고른 방법대로 정리됐고 폴더정리_결과.xlsx가 생성됐다</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>실습 1 완료</button></div></div>
+</section>
+
+<!-- ================= S4 ================= -->
+<section class="step" id="s4">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p2">PRACTICE 2</span><span class="tag light">영수증 엑셀 자동화</span><span class="tag time">STEP 1 · 12분</span></div>
+    <h2>영수증 스캔 6장을 정산표 한 파일로 만듭니다</h2><p class="lead">Codex가 이미지를 직접 읽고, 열 구성·분류·합계 수식까지 넣은 엑셀을 저장합니다. 흐린 값을 지어내지 않는지가 핵심 검토 포인트입니다.</p></div>
+  <div class="content">
+    <div class="grid g3">
+      <div class="card"><strong>프로젝트 폴더</strong><p>실습4-2_영수증정산 \ <b>영수증정산</b></p></div>
+      <div class="card"><strong>입력 파일</strong><p>영수증_스캔_01~06.jpg · 사용목적_메모.txt</p></div>
+      <div class="card"><strong>결과물</strong><p>2026년11월_업무추진비_정산표.xlsx (시트 3개)</p></div>
+    </div>
+    <div class="dlbox">
+      <div><b>실습 파일 내려받기</b><span>영수증 6장 + 메모 · 0.8MB · 압축을 풀면 <b>영수증정산</b> 폴더가 나옵니다</span></div>
+      <a class="btn primary linkbtn" href="downloads/practice2_receipts.zip" download>ZIP 다운로드 ↓</a>
+    </div>
+    <p class="muted mini" style="margin:-6px 0 14px">다운로드 → 압축 풀기(우클릭 &gt; 모두 압축 풀기) → 바탕화면으로 옮기기 → Codex [프로젝트 선택]에서 <b>영수증정산</b> 폴더 연결</p>
+    <label class="field" for="p2Dept">부서명<small>정산표·결재 양식에 들어갑니다</small></label>
+    <input type="text" id="p2Dept" data-field value="스마트정보과">
+    <h3>STEP 1 요청문</h3>
+    <div class="code"><span class="label">COPY · 정산표 작성</span><button class="copy">복사</button><span id="p2Prompt"></span></div>
+    <div class="callout danger"><strong>함정 파일:</strong> 영수증_스캔_06은 일부러 흐리게 만든 파일입니다. Codex가 추측으로 채우는지, '확인필요'로 표시하는지 확인하세요.</div>
+    <label class="check"><input type="checkbox" data-save="p2a"><span>정산표 파일이 생성되고 총 6건이 들어갔다</span></label>
+    <label class="check"><input type="checkbox" data-save="p2b"><span>합계가 엑셀 수식(SUM·SUMIF)으로 들어간 것을 셀을 눌러 확인했다</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>다음 단계</button></div></div>
+</section>
+
+<!-- ================= S5 ================= -->
+<section class="step" id="s5">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p2">PRACTICE 2</span><span class="tag light">검토 → 결재 양식</span><span class="tag time">STEP 2~3 · 8분</span></div>
+    <h2>원본과 대조시키고, 결재용 양식까지 붙입니다</h2><p class="lead">AI 결과는 '검토 요청'까지가 한 세트입니다. 검산을 시키고, 고친 셀은 표시하게 해서 사람이 마지막에 확인합니다.</p></div>
+  <div class="content">
+    <h3>STEP 2 · 검산 요청</h3>
+    <div class="code"><span class="label">COPY · 검산</span><button class="copy">복사</button>정산내역 시트에서 합계금액이 '수량 × 단가' 합과 맞는지 영수증별로 다시 대조해서 결과를 표로 보여 줘.
+틀린 곳이 있으면 고치고, 고친 셀은 노란색으로 표시해 줘.</div>
+    <h3>STEP 3 · 결재용 지출 증빙 목록</h3>
+    <div class="code"><span class="label">COPY · 결재 양식 (입력값 자동 반영)</span><button class="copy">복사</button><span id="p2Prompt2"></span></div>
+    <div class="callout good"><strong>업무 적용:</strong> 매달 영수증 폴더만 바꿔 같은 요청문을 쓰면 됩니다. 요청문을 '내 프롬프트'에 저장해 두세요.</div>
+    <label class="check"><input type="checkbox" data-save="p2c"><span>검산 결과표를 받았다</span></label>
+    <label class="check"><input type="checkbox" data-save="p2d"><span>결재란이 있는 지출 증빙 목록 시트가 추가됐다</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>실습 2 완료</button></div></div>
+</section>
+
+<!-- ================= S6 ================= -->
+<section class="step" id="s6">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p3">PRACTICE 3</span><span class="tag light">현장 안전점검 보고서 자동화</span><span class="tag time">STEP 1 · 12분</span></div>
+    <h2>현장사진 3장과 메모로 빈 양식을 채웁니다</h2><p class="lead">양식 원본은 그대로 두고 사본에 작성합니다. 사진에서 보이는 사실만 쓰고, 균열 폭처럼 보이지 않는 수치는 '정밀 계측 필요'로 남기게 합니다.</p></div>
+  <div class="content">
+    <div class="grid g3">
+      <div class="card"><strong>프로젝트 폴더</strong><p>실습4-3_현장안전점검 \ <b>현장안전점검보고서</b></p></div>
+      <div class="card"><strong>입력 파일</strong><p>빈양식_현장안전점검_결과보고서.docx · 현장사진_01~03.jpg · 현장점검_메모.txt</p></div>
+      <div class="card"><strong>결과물</strong><p>완성_삼향1교_현장안전점검_결과보고서.docx</p></div>
+    </div>
+    <div class="dlbox">
+      <div><b>실습 파일 내려받기</b><span>빈 양식 + 사진 3장 + 메모 · 0.6MB · 압축을 풀면 <b>현장안전점검보고서</b> 폴더가 나옵니다</span></div>
+      <a class="btn primary linkbtn" href="downloads/practice3_safety.zip" download>ZIP 다운로드 ↓</a>
+    </div>
+    <p class="muted mini" style="margin:-6px 0 14px">다운로드 → 압축 풀기(우클릭 &gt; 모두 압축 풀기) → 바탕화면으로 옮기기 → Codex [프로젝트 선택]에서 <b>현장안전점검보고서</b> 폴더 연결</p>
+    <h3>STEP 1 요청문</h3>
+    <div class="code"><span class="label">COPY · 보고서 작성</span><button class="copy">복사</button>현재 폴더에 있는 DOCX 빈 양식과 현장사진 3장, 현장점검 메모를 이용해서 완성된 현장 안전점검 결과보고서를 작성해 줘.
+
+입력 파일
+- 빈 양식: 빈양식_현장안전점검_결과보고서.docx
+- 현장사진: 현장사진_01.jpg, 현장사진_02.jpg, 현장사진_03.jpg
+- 메모: 현장점검_메모.txt
+
+작업 기준
+1. 빈 양식 원본은 수정하지 말고 사본으로 작업해 줘. 표 구조와 서식은 그대로 유지해.
+2. 각 사진을 직접 보고 확인되는 손상 상태(균열, 백태, 부식, 박리, 철근노출, 누수 등)만 적어 줘.
+   사진에서 확인되지 않는 내용(균열 폭 mm, 길이 등 수치)은 추측하지 말고 '정밀 계측 필요'로 적어 줘.
+3. 메모 내용과 사진 판독 결과가 다르면 비고에 그 차이를 적어 줘.
+4. 위험도는 상/중/하로 판단하고 판단 근거를 한 줄로 적어 줘.
+5. 사진대지에 사진 3장을 실제로 넣고, 사진마다 설명을 2줄 이내로 달아 줘.
+6. 문체는 공문서 개조식(~함, ~임)으로 작성해 줘.
+7. 파일명은 '완성_삼향1교_현장안전점검_결과보고서.docx'로 저장해 줘.</div>
+    <div class="grid g3">
+      <div class="callout"><strong>사진 1</strong><br>교각 세로 균열 · 백태</div>
+      <div class="callout"><strong>사진 2</strong><br>교량받침 부식 · 퇴적물</div>
+      <div class="callout"><strong>사진 3</strong><br>상판 하부 박리 · 철근노출 · 누수</div>
+    </div>
+    <label class="check"><input type="checkbox" data-save="p3a"><span>완성 보고서가 생성되고 사진대지에 사진 3장이 들어갔다</span></label>
+    <label class="check"><input type="checkbox" data-save="p3b"><span>빈 양식 원본이 그대로인 것을 확인했다</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>다음 단계</button></div></div>
+</section>
+
+<!-- ================= S7 ================= -->
+<section class="step" id="s7">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p3">PRACTICE 3</span><span class="tag light">검토 → 요약 보고</span><span class="tag time">STEP 2~3 · 8분</span></div>
+    <h2>근거 없는 문장을 찾아내고, 보고용 1쪽 요약을 만듭니다</h2><p class="lead">안전 분야 보고서는 '그럴듯한 문장'이 가장 위험합니다. 빈칸, 근거 없는 문장, 메모와 다른 내용을 점검표로 받습니다.</p></div>
+  <div class="content">
+    <h3>STEP 2 · 자체 검토</h3>
+    <div class="code"><span class="label">COPY · 검토</span><button class="copy">복사</button>완성본과 빈 양식을 비교해서 (1) 빈 칸이 남은 곳, (2) 사진 근거 없이 쓴 문장, (3) 메모와 다른 내용이 있는지 점검표로 보여 줘.
+문제가 있으면 고치고 어떤 부분을 고쳤는지 알려 줘.</div>
+    <h3>STEP 3 · 과장 보고용 요약 + 재사용 안내</h3>
+    <div class="code"><span class="label">COPY · 확장</span><button class="copy">복사</button>1) 같은 내용을 과장님 보고용 1쪽 요약본(핵심 지적사항 3개, 조치계획, 예산 필요 여부)으로 따로 만들어 줘.
+2) 다음 점검 때도 쓸 수 있게, 폴더에 사진과 메모만 넣으면 보고서가 자동으로 만들어지는 방법을 README.txt 로 정리해 줘.</div>
+    <div class="callout danger"><strong>꼭 확인:</strong> 균열 폭(mm)·길이 같은 수치를 지어내지 않았는지, 위험도 판단 근거가 사진과 연결되는지 직접 읽어 보세요.</div>
+    <label class="check"><input type="checkbox" data-save="p3c"><span>점검표를 받고 수정 내역을 확인했다</span></label>
+    <label class="check"><input type="checkbox" data-save="p3d"><span>1쪽 요약본이 만들어졌다</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>실습 3 완료</button></div></div>
+</section>
+
+<!-- ================= S8 ================= -->
+<section class="step" id="s8">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p4">PRACTICE 4</span><span class="tag light">국가통계포털 API 연동 챗봇</span><span class="tag time">3분</span></div>
+    <h2>빈 폴더 하나만 준비하면 됩니다</h2><p class="lead">챗봇은 프롬프트 3번으로 만듭니다. 지침 파일도, 예시 데이터도 Codex가 만듭니다. 인증키는 없어도 시작할 수 있고, 나중에 ②번 프롬프트로 연결합니다.</p></div>
+  <div class="content">
+    <div class="flow">
+      <div class="node"><b>준비</b>바탕화면에 빈 폴더 만들기</div>
+      <div class="node"><b>① 만들기</b>지침·데이터·화면까지 한 번에</div>
+      <div class="node"><b>② 키 연결</b>.env에 인증키 붙여넣기</div>
+      <div class="node"><b>③ 검증·배포</b>함정 질문 테스트 → Vercel</div>
+    </div>
+    <h3>지금 할 일</h3>
+    <label class="check"><input type="checkbox" data-save="k2"><span>바탕화면에 <b>빈 폴더</b>(예: 목포통계챗봇)를 만들고 Codex 새 채팅 &gt; [프로젝트 선택]으로 연결했다<small>폴더 안에는 아무것도 넣지 않습니다.</small></span></label>
+    <h3>KOSIS 인증키 (프롬프트 ②에서 사용 · 미리 신청해 두기)</h3>
+    <div class="linkbar">
+      <a class="btn primary linkbtn" href="https://kosis.kr/openapi/index/index.jsp" target="_blank" rel="noopener">KOSIS 공유서비스 바로가기 ↗</a>
+      <a class="btn linkbtn" href="https://kosis.kr/index/index.do" target="_blank" rel="noopener">KOSIS 국가통계포털 ↗</a>
+      <span class="muted mini">로그인 → [OPEN API 인증키 신청] → 발급된 키는 메모장에만 보관</span>
+    </div>
+    <div class="callout danger"><strong>인증키 보안:</strong> 키는 워크북·채팅창·캡처·메신저에 붙이지 않습니다. 프롬프트 ②에서 Codex가 열어 주는 .env 파일에만 직접 넣습니다.</div>
+    <label class="check"><input type="checkbox" data-save="k1"><span>KOSIS 인증키를 신청했다 (아직 없어도 다음 단계 진행 가능)</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>준비 완료</button></div></div>
+</section>
+
+<!-- ================= S9 ================= -->
+<section class="step" id="s9">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p4">PRACTICE 4</span><span class="tag light">프롬프트 ①</span><span class="tag time">15분</span></div>
+    <h2>색과 화면 요소를 고르고, 만들기 요청문을 붙여 넣습니다</h2><p class="lead">아래에서 고른 값이 요청문에 자동으로 들어갑니다. Codex가 질문하면 '요구사항을 유지하고 진행해 줘'라고 답합니다.</p></div>
+  <div class="content">
+    <h3>테마 고르기</h3>
+    <div class="presets" id="presets"></div>
+    <div class="grid g3">
+      <div><label class="field" for="cPrimary">주 색상</label><div class="color"><input type="color" data-pick="cPrimary"><input type="text" id="cPrimary" data-field value="#0B2E4F"></div></div>
+      <div><label class="field" for="cSecondary">보조 색상</label><div class="color"><input type="color" data-pick="cSecondary"><input type="text" id="cSecondary" data-field value="#0E6BA8"></div></div>
+      <div><label class="field" for="cAccent">포인트 색상</label><div class="color"><input type="color" data-pick="cAccent"><input type="text" id="cAccent" data-field value="#4CAF2E"></div></div>
+    </div>
+    <div class="grid g2">
+      <div><label class="field" for="botName">챗봇 이름</label><input type="text" id="botName" data-field placeholder="예: 목포 통계비서 '유달이'"></div>
+      <div><label class="field" for="tone">말투 한 줄</label><input type="text" id="tone" data-field value="친절한 존댓말로, 숫자와 결론을 먼저 짧게"></div>
+    </div>
+    <div class="preview" id="preview">
+      <div class="pv-head" id="pvHead"><div class="pv-logo" id="pvLogo">MP</div><div><b id="pvName">목포시 행정통계 챗봇</b><div style="font-size:12.5px;opacity:.8">색상 미리보기</div></div></div>
+      <div class="pv-body">
+        <div class="pv-kpi"><small>총인구</small><b>208,900명</b><i style="color:#C2410C">▼ 1.1%</i></div>
+        <div class="pv-kpi"><small>고령인구 비율</small><b>22.9%</b><i id="pvUp2">▲ 1.3%p</i></div>
+        <div class="pv-kpi"><small>사업체 수</small><b>23,040개</b><i id="pvUp3">▲ 1.0%</i></div>
+      </div>
+    </div>
+    <h3>화면 요소 <span class="muted mini">많이 고를수록 화려해지고 만드는 시간이 늘어납니다</span></h3>
+    <div class="opts">
+      <label class="check"><input type="checkbox" data-opt="kpi" checked><span><b>KPI 요약 카드</b><small>최신값·증감·증감률 큰 숫자</small></span></label>
+      <label class="check"><input type="checkbox" data-opt="topicColor" checked><span><b>주제별 색상·아이콘</b><small>통계 6종마다 고유 색</small></span></label>
+      <label class="check"><input type="checkbox" data-opt="badge" checked><span><b>데이터 출처 배지</b><small>실데이터 초록 / 예시 주황</small></span></label>
+      <label class="check"><input type="checkbox" data-opt="hero" checked><span><b>목포 바다 웨이브 헤더</b><small>그라데이션 + 물결 장식</small></span></label>
+      <label class="check"><input type="checkbox" data-opt="motion"><span><b>부드러운 동작</b><small>입력 중 표시·숫자 카운트업</small></span></label>
+      <label class="check"><input type="checkbox" data-opt="dark"><span><b>다크 모드 버튼</b><small>야간 상황판 테마</small></span></label>
+    </div>
+    <h3>프롬프트 ① 요청문</h3>
+    <div class="code big"><span class="label">COPY · 프롬프트 ① 만들기 (선택값 자동 반영)</span><button class="copy">복사</button><span id="botPrompt"></span></div>
+    <label class="check"><input type="checkbox" data-save="b1"><span>http://localhost:3000 에서 챗봇이 열리고 '교육용 예시 데이터' 배지가 보인다</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>챗봇 완성</button></div></div>
+</section>
+
+<!-- ================= S10 ================= -->
+<section class="step" id="s10">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p4">PRACTICE 4</span><span class="tag light">프롬프트 ②</span><span class="tag time">7분 · 키가 없으면 건너뛰기</span></div>
+    <h2>인증키가 나오면 연결을 요청합니다</h2><p class="lead">Codex가 .env 파일을 만들어 열어 주면, 키를 그 자리에 직접 붙여 넣고 저장합니다. 키를 채팅창에 붙이지 않습니다.</p></div>
+  <div class="content">
+    <div class="code"><span class="label">COPY · 프롬프트 ② 키 연결</span><button class="copy">복사</button><span id="urlPrompt"></span></div>
+    <div class="grid g2">
+      <div class="callout warn"><strong>키 넣는 곳:</strong> 열린 .env 파일의 <b>KOSIS_API_KEY=</b> 바로 뒤에 붙여 넣고 저장 → Codex에 "넣었어"라고 말합니다.</div>
+      <div class="callout good"><strong>성공 확인:</strong> 출처 배지가 <b>KOSIS 실데이터</b>로 바뀌면 연결 성공입니다.</div>
+    </div>
+    <label class="check"><input type="checkbox" data-save="a1"><span>.env에 키를 넣었고 실데이터 배지를 확인했다 (또는 키가 없어 건너뛴다)</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>다음 단계</button></div></div>
+</section>
+
+<!-- ================= S11 ================= -->
+<section class="step" id="s11">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p4">PRACTICE 4</span><span class="tag light">프롬프트 ③</span><span class="tag time">10분</span></div>
+    <h2>함정 질문으로 검증하고 Vercel로 배포합니다</h2><p class="lead">모르는 통계를 지어내지 않는지가 가장 중요합니다. Codex가 테스트한 뒤, 직접도 한두 개 질문해 보세요.</p></div>
+  <div class="content">
+    <label class="field" for="projName">배포 이름<small>영문 소문자·숫자·하이픈</small></label>
+    <input type="text" id="projName" data-field value="mokpo-stat-bot">
+    <div class="code"><span class="label">COPY · 프롬프트 ③ 검증·배포 (입력값 자동 반영)</span><button class="copy">복사</button><span id="deployPrompt"></span></div>
+    <h3>직접 확인 <span id="testScore" style="font-size:17px;font-weight:900;color:var(--green);margin-left:6px">0 / 5</span></h3>
+    <div id="tests"></div>
+    <div class="callout danger"><strong>공개 범위:</strong> 배포 주소는 누구나 열 수 있습니다. 내부 자료가 들어간 챗봇은 정보 담당 부서와 협의합니다.</div>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>검증·배포 완료</button></div></div>
+</section>
+
+<!-- ================= S12 ================= -->
+<section class="step" id="s12">
+  <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p4">PRACTICE 4</span><span class="tag light">도전 과제 · 선택</span><span class="tag time">과제</span></div>
+    <h2>제미나이를 붙여 더 자연스러운 답변 만들기</h2><p class="lead">KOSIS 키만으로도 챗봇은 완성됩니다. 질문을 더 자유롭게 알아듣고 통계를 해석하는 문장이 필요할 때 도전하는 선택 과제입니다.</p></div>
+  <div class="content">
+    <div class="grid g2">
+      <div class="card tint"><strong>언제 필요한가</strong><p>어떤 식으로 물어봐도 알아듣게 하고 싶거나, 통계의 흐름을 해석해서 자연스러운 문장으로 설명하게 하고 싶을 때입니다. 이때는 <b>KOSIS가 숫자를 주고, 제미나이는 그 숫자로 문장만 쓰는 구조(RAG)</b>로 만듭니다.</p></div>
+      <div class="card" style="background:var(--coral2);border-color:#F6D2BF"><strong style="color:var(--coral)">주의할 점</strong><p>관리할 키가 하나 더 생기고 사용 요금이 들 수 있습니다. 또 <b>"받은 숫자만 써라"</b>는 조건을 꼭 걸어야 숫자를 지어내지 않습니다.</p></div>
+    </div>
+    <h3>제미나이 API 키 받기</h3>
+    <div class="flow">
+      <div class="node"><b>01</b>Google AI Studio 접속 · 구글 계정 로그인</div>
+      <div class="node"><b>02</b>[Get API key] 클릭</div>
+      <div class="node"><b>03</b>[Create API key] → 키 복사</div>
+      <div class="node"><b>04</b>메모장에만 보관 → .env에 직접 붙여넣기</div>
+    </div>
+    <div class="linkbar">
+      <a class="btn primary linkbtn" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio 키 발급 바로가기 ↗</a>
+      <span class="muted mini">무료 사용량 범위와 요금 정책은 바뀔 수 있으니 발급 화면에서 확인하세요</span>
+    </div>
+    <h3>프롬프트 ④ 요청문</h3>
+    <div class="code"><span class="label">COPY · 프롬프트 ④ 도전 과제</span><button class="copy">복사</button>Gemini API를 추가해서 답변을 자연스러운 문장으로 만들어 줘.
+- 키는 .env의 GEMINI_API_KEY 자리를 비워 두고 열어 줘. 내가 직접 넣을게.
+- Gemini에는 질문과 KOSIS에서 조회한 숫자만 전달하고, 그 숫자 밖의 내용은 쓰지 않게 해 줘.
+- 원인·전망처럼 통계로 확인할 수 없는 내용은 '담당자 검토 필요'로 표시해 줘.
+- Gemini 연결이 실패하면 지금의 규칙 기반 답변으로 자동 전환해 줘.</div>
+    <div class="callout danger"><strong>키 보안:</strong> 제미나이 키도 채팅창·캡처·메신저에 붙이지 않고 .env 파일에만 넣습니다. 질문에 개인정보를 넣지 않습니다(질문 내용이 외부 AI로 전달됩니다).</div>
+    <label class="check"><input type="checkbox" data-save="g1"><span>과제 확인: "목포 인구가 왜 줄어?"에 숫자는 KOSIS 그대로, 원인은 '담당자 검토 필요'로 답한다</span></label>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn primary" data-next>다음 단계</button></div></div>
+</section>
+
+<!-- ================= S13 ================= -->
+<section class="step" id="s13">
+  <div class="hero dark"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag" style="background:#9FD27F;color:#0B2E4F">FINISH</span><span class="tag light">결과 기록</span></div>
+    <h2>오늘 만든 결과를 기록하고 우리 부서에 적용해 봅니다</h2><p class="lead">아래 기록은 이 브라우저에만 저장됩니다. [인쇄·PDF] 버튼으로 워크북 전체를 저장할 수 있습니다.</p></div>
+  <div class="content">
+    <div class="record"><label for="r1">챗봇 배포 주소</label><input type="text" id="r1" data-field placeholder="https://mokpo-stat-bot.vercel.app"></div>
+    <div class="record"><label for="r2">가장 유용했던 실습</label><input type="text" id="r2" data-field placeholder="예: 영수증 정산표 - 매달 30분 절약 예상"></div>
+    <div class="record"><label for="r3">우리 부서 적용 아이디어</label><textarea id="r3" data-field placeholder="예: 민원 접수 엑셀 주간 취합 자동화, 축제 만족도 설문 결과보고서 자동 작성"></textarea></div>
+    <h3>부서별 적용 아이디어</h3>
+    <div class="grid g3">
+      <div class="card"><div class="ico c1">기</div><strong>기획·예산</strong><p>부서별 예산집행 엑셀 취합, 주간업무보고 초안</p></div>
+      <div class="card"><div class="ico c2">관</div><strong>관광·문화</strong><p>축제 설문 분석, 관광객 통계 대시보드</p></div>
+      <div class="card"><div class="ico c3">건</div><strong>건설·안전</strong><p>현장점검 보고서, 사진대지 자동 편집</p></div>
+      <div class="card"><div class="ico c4">민</div><strong>민원·복지</strong><p>민원 유형 분류·통계표, FAQ 챗봇</p></div>
+      <div class="card"><div class="ico c1">정</div><strong>스마트정보</strong><p>행정통계 챗봇 고도화, 공공데이터 연동</p></div>
+      <div class="card"><div class="ico c3">총</div><strong>총무·인사</strong><p>문서 폴더 정리 규칙화, 교육 이수 현황 취합</p></div>
+    </div>
+    <div class="callout good"><strong>오늘의 원칙 세 가지:</strong> 원본은 지키고 사본으로 작업한다 · 계획을 먼저 보고 승인한다 · 결과는 원본과 대조해 사람이 확정한다.</div>
+  </div>
+  <div class="footer-nav"><button class="btn" data-prev>이전</button><div class="right"><button class="btn green" id="finishBtn">실습 완료</button></div></div>
+</section>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(()=>{
+'use strict';
+const KEY='mokpoCodexWorkbookV3';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const ids=$$('.step').map(x=>x.id);
+let state={current:'s0',done:[],values:{},opts:null,tests:{}};
+try{state={...state,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1500)};
+const v=id=>{const el=$('#'+id);return el?el.value.trim():''};
+const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+const PRESETS=[
+ {n:'목포 바다',d:'남색·바다파랑·유달 초록',c:['#0B2E4F','#0E6BA8','#4CAF2E']},
+ {n:'유달산 노을',d:'짙은 보라·노을 주황·금빛',c:['#3A2150','#E0632E','#F2B33D']},
+ {n:'삼학도 숲',d:'숲 초록·하늘·연두',c:['#1F5B3A','#2B8CCB','#8BC34A']},
+ {n:'야간 상황판',d:'다크 네이비·시안·라임',c:['#0E1726','#22B8CF','#A3E635']}
+];
+function renderPresets(){
+  $('#presets').innerHTML=PRESETS.map((p,i)=>`<button type="button" class="preset" data-preset="${i}"><div class="sw">${p.c.map(c=>`<i style="background:${c}"></i>`).join('')}</div><b>${p.n}</b><small>${p.d}</small></button>`).join('');
+  $$('.preset').forEach(b=>b.onclick=()=>{const p=PRESETS[+b.dataset.preset];['cPrimary','cSecondary','cAccent'].forEach((id,k)=>$('#'+id).value=p.c[k]);state.values.preset=p.n;capture();toast(p.n+' 테마 적용')});
+}
+
+const TESTS=[
+ ['목포시 최근 5년 인구 추이','2021~2025 총인구, 그래프와 출처 표시'],
+ ['고령인구 비율 변화 알려줘','총인구가 아닌 고령인구 비율, 증감은 %p'],
+ ['가구 수 알려줘','세대수로 이해함'],
+ ['목포시 관광객 수 알려줘','없는 통계 → 확인 필요 안내, 숫자를 지어내지 않음'],
+ ['인구 2030년 전망 알려줘','자료 없는 기간 → 예측치를 만들지 않음']
+];
+function renderTests(){
+  $('#tests').innerHTML=TESTS.map((t,i)=>`<label class="check"><input type="checkbox" data-test="${i}"><span><b>Q${i+1}. ${t[0]}</b><small>기대 동작: ${t[1]}</small></span></label>`).join('');
+  $$('[data-test]').forEach(el=>{el.checked=!!state.tests[el.dataset.test];el.onchange=()=>{state.tests[el.dataset.test]=el.checked;save();score()}});
+  score();
+}
+function score(){const n=Object.values(state.tests).filter(Boolean).length;$('#testScore').textContent=`${n} / ${TESTS.length}`}
+
+const OPT_TEXT={
+ kpi:'KPI 요약 카드(최신값·전년 대비 증감·증감률)',
+ topicColor:'통계 주제별 고유 색과 아이콘',
+ badge:'출처 배지(KOSIS 실데이터 초록 / 교육용 예시 주황)',
+ hero:'주 색상→보조 색상 그라데이션 헤더 + 물결 SVG 장식',
+ motion:'입력 중 점 애니메이션, KPI 숫자 카운트업(짧고 부드럽게)',
+ dark:'다크 모드 전환 버튼'
+};
+
+function promptP1(){
+  return `${v('p1Pick')||'2'}번 방법으로 정리해 줘.
+
+- 먼저 원본 전체를 '_원본백업' 폴더에 복사
+- 삭제 없이 이동·이름 변경만
+- 끝나면 '폴더정리_결과.xlsx'와 정리된 폴더 구조를 보여 줘`;}
+function promptP2(){
+  return `현재 폴더에 영수증 스캔 이미지가 들어 있어. 모든 영수증을 읽어서 ${v('p2Dept')||'우리 부서'} 업무추진비 정산용 엑셀 파일 하나로 정리해 줘.
+
+[시트1: 정산내역] 열 구성
+연번 / 사용일자(YYYY-MM-DD) / 가맹점명 / 사업자번호 / 분류(식비·회의비·교통비·소모품비·인쇄비 중 선택) /
+주요 품목 / 공급가액 / 부가세 / 합계금액 / 결제수단(법인카드·현금·계좌이체) /
+사용목적(사용목적_메모.txt 참고) / 원본파일명 / 비고(판독이 불확실하면 '확인필요'와 이유)
+
+[시트2: 분류별합계] 분류별 건수와 합계금액, 맨 아래 총계
+[시트3: 결제수단별합계] 결제수단별 건수와 합계금액
+
+조건
+- 금액은 천 단위 쉼표 숫자 서식으로, 합계는 엑셀 수식(SUM, SUMIF)으로 넣어 줘.
+- 머리글 행은 고정하고 색을 넣어 보기 좋게 만들어 줘.
+- 흐리거나 안 보이는 글자는 추측해서 채우지 말고 '확인필요'로 표시해 줘.
+- 파일명은 '2026년11월_업무추진비_정산표.xlsx' 로 저장해 줘.
+- 다 만들면 총 건수와 총액을 알려 주고, 확인필요 항목은 따로 목록으로 보여 줘.`;}
+function promptP2b(){
+  return `정산내역을 바탕으로 A4 가로 한 장짜리 '지출 증빙 목록' 시트를 추가해 줘.
+상단에 부서명(${v('p2Dept')||'○○과'}), 작성일, 작성자 칸,
+하단에 '위와 같이 지출하였음을 확인합니다.' 문구와 결재란(담당/팀장/과장)을 넣어 줘.
+인쇄 영역과 페이지 설정(A4 가로, 한 페이지에 맞춤)도 해 줘.`;}
+
+function botPrompt(){
+  const name=v('botName')||'목포시 행정통계 AI 챗봇';
+  const p=v('cPrimary')||'#0B2E4F',s=v('cSecondary')||'#0E6BA8',a=v('cAccent')||'#4CAF2E';
+  const def=['kpi','topicColor','badge','hero'];
+  const opts=Object.keys(OPT_TEXT).filter(k=>state.opts?state.opts[k]:def.includes(k)).map(k=>OPT_TEXT[k]);
+  return `이 빈 폴더에 “${name}” 웹앱을 처음부터 만들어 줘. 사용자는 목포시청 공무원이야.
+나는 코드를 고치지 않을 거라서 파일 생성, 실행, 화면 확인까지 끝내 줘.
+
+1. 먼저 이 프로젝트의 지침 AGENTS.md를 만들어 줘.
+   (통계 수치는 지어내지 않기 · 모든 답변에 출처 · 모르는 통계는 '확인 필요' · 인증키는 서버에서만)
+2. 목포시 통계 6종(총인구 · 세대수 · 고령인구 비율 · 출생아 수 · 순이동 · 사업체 수)의
+   2021~2025년 교육용 예시 데이터를 만들고, 화면에 '교육용 예시 데이터'로 표시해 줘.
+3. 기능: 질문에서 주제와 기간(최근 N년, ○○년부터)을 알아내 답변과 출처 표시
+   → 표·그래프·CSV 다운로드 → 정책분석 보고서 초안(현황/추이/시사점/출처)
+4. KOSIS 조회는 서버 함수(api/kosis.js)로 분리하고, 키는 .env의 KOSIS_API_KEY로 읽게 해 줘.
+   지금은 키 없이 예시 데이터로 동작하면 돼.
+5. 디자인
+   - 색상(CSS 변수): 주 ${p} / 보조 ${s} / 포인트 ${a}
+   - 화면 요소: ${opts.join(', ')||'기본 카드형'}
+   - 말투: ${v('tone')||'친절한 존댓말'}
+
+다 만들면 node server.js로 실행하고, 예시 질문 5개를 눌러 확인한 뒤 화면을 캡처해서 보여 줘.`;}
+function urlPrompt(){
+  return `KOSIS 인증키를 연결하려고 해.
+
+1. .env 파일을 만들고 KOSIS_API_KEY= 자리를 비워 둔 채 열어 줘. 키는 내가 직접 붙여 넣을게.
+2. 목포시 총인구부터 KOSIS OpenAPI로 실제 조회되게 바꿔 줘.
+   통계표 주소가 필요하면 kosis.kr에서 찾는 방법을 알려 줘.
+3. 내가 키를 넣으면 다시 실행해서 'KOSIS 실데이터' 배지가 뜨는지 확인해 줘.
+   실패하면 원인만 알려 주고, 키 값은 화면에 출력하지 마.`;}
+function deployPrompt(){
+  const n=v('projName')||'mokpo-stat-bot';
+  return `마무리해 줘.
+
+1. 아래 질문 5개로 직접 테스트하고 결과를 표로 보여 줘. 틀린 부분은 고쳐 줘.
+   - 목포시 최근 5년 인구 추이
+   - 고령인구 비율 변화 알려줘
+   - 가구 수 알려줘
+   - 목포시 관광객 수 알려줘 (← '확인 필요'로 답해야 정상)
+   - 인구 2030년 전망 알려줘 (← 예측치를 만들면 안 됨)
+2. 그다음 Vercel에 '${n}' 이름으로 배포하는 과정을 한 단계씩 같이 진행해 줘.
+   .env는 올리지 말고, KOSIS_API_KEY는 Vercel 환경변수로 등록하게 안내해 줘.`;}
+
+function renderAll(){
+  $('#p1Prompt').textContent=promptP1();
+  $('#p2Prompt').textContent=promptP2();
+  $('#p2Prompt2').textContent=promptP2b();
+  $('#botPrompt').textContent=botPrompt();
+  $('#urlPrompt').textContent=urlPrompt();
+  $('#deployPrompt').textContent=deployPrompt();
+  const p=v('cPrimary')||'#0B2E4F',s=v('cSecondary')||'#0E6BA8',a=v('cAccent')||'#4CAF2E';
+  $('#pvHead').style.background=`linear-gradient(110deg,${p},${s})`;
+  $('#pvLogo').textContent='MP';
+  $('#pvLogo').style.background=a;
+  $('#pvName').textContent=v('botName')||'목포시 행정통계 챗봇';
+  $('#pvUp2').style.color=a;$('#pvUp3').style.color=a;
+  $$('[data-pick]').forEach(c=>{const t=$('#'+c.dataset.pick).value;if(/^#[0-9a-f]{6}$/i.test(t))c.value=t});
+  $$('.preset').forEach(b=>b.classList.toggle('on',PRESETS[+b.dataset.preset].n===state.values.preset));
+}
+function hydrate(){
+  $$('[data-save]').forEach(el=>{if(state.values[el.dataset.save]!==undefined)el.checked=!!state.values[el.dataset.save]});
+  $$('[data-field]').forEach(el=>{if(state.values[el.id]!==undefined)el.value=state.values[el.id]});
+  if(state.opts)$$('[data-opt]').forEach(el=>el.checked=!!state.opts[el.dataset.opt]);
+}
+function capture(){
+  $$('[data-save]').forEach(el=>state.values[el.dataset.save]=el.checked);
+  $$('[data-field]').forEach(el=>state.values[el.id]=el.value);
+  state.opts={};$$('[data-opt]').forEach(el=>state.opts[el.dataset.opt]=el.checked);
+  save();renderAll();
+}
+function progress(){
+  $$('.nav').forEach(n=>n.classList.toggle('done',state.done.includes(n.dataset.go)));
+  const total=ids.length,c=ids.filter(x=>state.done.includes(x)).length;
+  $('#bar').style.width=Math.round(c/total*100)+'%';$('#count').textContent=`${c} / ${total} 완료`;
+}
+function go(id){
+  if(!ids.includes(id))id='s0';state.current=id;save();
+  $$('.step').forEach(x=>x.classList.toggle('show',x.id===id));
+  $$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.go===id));
+  $('#side').classList.remove('open');renderAll();progress();window.scrollTo({top:0,behavior:'smooth'});
+}
+function next(d){const i=ids.indexOf(state.current);if(d>0){if(!state.done.includes(state.current))state.done.push(state.current);go(ids[Math.min(i+1,ids.length-1)])}else go(ids[Math.max(i-1,0)])}
+
+renderPresets();renderTests();hydrate();
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+$$('[data-next]').forEach(b=>b.onclick=()=>next(1));
+$$('[data-prev]').forEach(b=>b.onclick=()=>next(-1));
+document.addEventListener('input',e=>{if(e.target.matches('[data-pick]')){$('#'+e.target.dataset.pick).value=e.target.value;state.values.preset='';}if(e.target.matches('[data-field],[data-pick]'))capture()});
+document.addEventListener('change',e=>{if(e.target.matches('[data-save],[data-opt]'))capture()});
+$$('.copy').forEach(b=>b.onclick=async()=>{
+  const box=b.parentElement.cloneNode(true);box.querySelectorAll('.label,.copy').forEach(x=>x.remove());
+  const text=box.textContent.trim();
+  try{await navigator.clipboard.writeText(text)}catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}
+  b.textContent='복사됨';setTimeout(()=>b.textContent='복사',1300);toast('요청문을 복사했습니다. Codex에 붙여 넣으세요.');
+});
+$('#printBtn').onclick=()=>window.print();
+$('#resetBtn').onclick=()=>{if(confirm('체크와 입력값을 모두 지울까요?')){try{localStorage.removeItem(KEY)}catch(e){}location.reload()}};
+$('#menuBtn').onclick=()=>$('#side').classList.toggle('open');
+$('#finishBtn').onclick=()=>{if(!state.done.includes('s13'))state.done.push('s13');save();progress();toast('수고하셨습니다! 실습을 모두 마쳤습니다.')};
+go(state.current);
+})();
+</script>
+</body>
+</html>
