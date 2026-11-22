@@ -84,6 +84,12 @@ h3{font-size:19px;color:var(--navy);margin:26px 0 10px}
 .dlbox b{color:var(--navy)}.dlbox span{display:block;font-size:14px;color:var(--body);margin-top:2px}
 .dlrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0 6px}
 @media (max-width:640px){.dlbox{flex-direction:column;align-items:flex-start}}
+mark.fill{background:rgba(159,210,127,.22);color:#D7F0C6;border-radius:4px;padding:0 3px}
+mark.blank{background:#F2B33D;color:#3A2500;border-radius:4px;padding:0 4px;font-weight:800}
+.bl-tag{display:inline-block;font-size:11.5px;font-weight:800;background:#F2B33D;color:#3A2500;border-radius:6px;padding:1px 7px;margin-right:7px;vertical-align:1px}
+[data-blank]{border:2px dashed #F2B33D!important;background:#FFFBF0!important}
+[data-blank].ok{border:2px solid #9FD27F!important;background:#fff!important}
+.blank-guide{display:flex;gap:10px;align-items:flex-start;margin:14px 0 4px;padding:12px 16px;border-radius:12px;background:#FFF7E3;color:#6B4A00;font-size:14.5px}
 .btn.green{background:var(--green);border-color:var(--green);color:#fff}
 
 /* grid & cards */
@@ -269,7 +275,9 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;border:1px solid v
       <div class="card tint"><div class="ico c3">2</div><strong>개인 맞춤 설정</strong><p>Codex 지침 칸에 아래 지침 붙여넣기 → 저장</p></div>
       <div class="card tint"><div class="ico c2">3</div><strong>데이터 관리</strong><p>모델 개선을 위한 데이터 학습 허용 → 끄기</p></div>
     </div>
-    <div class="code big"><span class="label">COPY · CODEX 공통 지침</span><button class="copy">복사</button>1. 기본 원칙
+    <div class="blank-guide"><span class="bl-tag">빈칸</span><span>노란 칸은 직접 채우는 곳입니다. 채운 내용은 아래 요청문에 바로 들어가고, 빈칸이 남아 있으면 복사되지 않습니다.</span></div>
+    <label class="field" for="agentsMy"><span class="bl-tag">빈칸</span>5. 내가 추가하는 지침 (1~2줄)</label><textarea id="agentsMy" data-field data-blank placeholder="예: 보고서 제목은 [목포시 ○○과] 형식으로 시작한다 / 표에는 단위를 꼭 적는다"></textarea>
+    <template id="agentsBase">1. 기본 원칙
 모든 답변과 결과물은 한국어로 작성한다.
 핵심 결론과 바로 사용할 수 있는 결과물을 먼저 제시한다.
 불필요한 서론, 배경, 반복 설명은 생략한다.
@@ -287,7 +295,8 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;border:1px solid v
 
 4. 검토 원칙
 결과물을 보고하기 전에 합계, 건수, 날짜를 원본과 한 번 더 대조한다.
-판독이 불확실한 값은 임의로 채우지 않고 &#x27;확인필요&#x27;로 표시하고 그 이유를 적는다.</div>
+판독이 불확실한 값은 임의로 채우지 않고 &#x27;확인필요&#x27;로 표시하고 그 이유를 적는다.</template>
+    <div class="code big"><span class="label">COPY · CODEX 공통 지침 (내 지침 포함)</span><button class="copy">복사</button><span id="agentsPrompt"></span></div>
     <div class="callout warn"><strong>권한(승인) 설정:</strong> 실습 파일처럼 가상 자료만 다룰 때는 '나 대신 승인'을 켜도 됩니다. 실제 업무 폴더·개인정보 파일·프로그램 설치가 걸린 작업은 끄고 직접 승인합니다.</div>
     <label class="check"><input type="checkbox" data-save="s1a"><span>공통 지침을 붙여 넣고 저장했다</span></label>
     <label class="check"><input type="checkbox" data-save="s1b"><span>데이터 학습 허용을 껐다</span></label>
@@ -310,11 +319,8 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;border:1px solid v
     </div>
     <p class="muted mini" style="margin:-6px 0 14px">다운로드 → 압축 풀기(우클릭 &gt; 모두 압축 풀기) → 바탕화면으로 옮기기 → Codex [프로젝트 선택]에서 <b>정리할폴더_다운로드</b> 폴더 연결</p>
     <h3>STEP 1 요청문 · 정리 방법 3가지 제안</h3>
-    <div class="code"><span class="label">COPY · 정리 방법 제안</span><button class="copy">복사</button>이 폴더의 파일을 정리하려고 해.
-정리 방법 3가지를 제안해 줘.
-
-방법마다 폴더 구조 예시와 장단점을 짧게 보여 주고,
-아직 파일은 옮기지 마.</div>
+    <label class="field" for="p1Need"><span class="bl-tag">빈칸</span>정리할 때 가장 중요하게 생각하는 기준</label><input type="text" id="p1Need" data-field data-blank placeholder="예: 담당자가 바뀌어도 바로 찾을 수 있게 / 보고서 제출 마감일 순서로">
+    <div class="code"><span class="label">COPY · 정리 방법 제안 (빈칸 반영)</span><button class="copy">복사</button><span id="p1Step1"></span></div>
     <div class="callout"><strong>비교 포인트:</strong> 업무별 · 날짜별 · 파일 종류별처럼 서로 다른 방법이 나왔는지, 중복·임시 파일 처리 방법이 들어 있는지 보세요. 마음에 드는 방법이 없으면 "업무별로 나누되 날짜를 파일명 앞에 붙이는 방법도 넣어 줘"처럼 다시 요청합니다.</div>
     <label class="check"><input type="checkbox" data-save="p1a"><span>정리 방법 3가지를 받았고, 파일이 그대로인 것을 확인했다</span></label>
   </div>
@@ -328,6 +334,7 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;border:1px solid v
   <div class="content">
     <label class="field" for="p1Pick">실행할 방법<small>STEP 1에서 제안받은 번호</small></label>
     <select id="p1Pick" data-field><option value="1">1번 방법</option><option value="2" selected>2번 방법</option><option value="3">3번 방법</option></select>
+    <label class="field" for="p1Rule"><span class="bl-tag">빈칸</span>추가로 원하는 정리 규칙 1가지</label><input type="text" id="p1Rule" data-field data-blank placeholder="예: 파일명 앞에 날짜(YYYYMMDD)를 붙여 줘 / '최종'이 들어간 파일은 최신본만 남겨 줘">
     <h3>STEP 2 요청문 · 골라서 실행</h3>
     <div class="code"><span class="label">COPY · 실행 (선택값 자동 반영)</span><button class="copy">복사</button><span id="p1Prompt"></span></div>
     <h3>도전 · 다음에도 쓰는 자동 정리 도구</h3>
@@ -355,8 +362,9 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;border:1px solid v
       <a class="btn primary linkbtn" href="downloads/practice2_receipts.zip" download>ZIP 다운로드 ↓</a>
     </div>
     <p class="muted mini" style="margin:-6px 0 14px">다운로드 → 압축 풀기(우클릭 &gt; 모두 압축 풀기) → 바탕화면으로 옮기기 → Codex [프로젝트 선택]에서 <b>영수증정산</b> 폴더 연결</p>
-    <label class="field" for="p2Dept">부서명<small>정산표·결재 양식에 들어갑니다</small></label>
-    <input type="text" id="p2Dept" data-field value="스마트정보과">
+    <label class="field" for="p2Dept"><span class="bl-tag">빈칸</span>우리 부서명<small>정산표·결재 양식에 들어갑니다</small></label>
+    <input type="text" id="p2Dept" data-field data-blank placeholder="예: 스마트정보과">
+    <label class="field" for="p2Cat"><span class="bl-tag">빈칸</span>분류에 추가할 항목 1가지</label><input type="text" id="p2Cat" data-field data-blank placeholder="예: 교육훈련비 / 홍보비 / 행사운영비">
     <h3>STEP 1 요청문</h3>
     <div class="code"><span class="label">COPY · 정산표 작성</span><button class="copy">복사</button><span id="p2Prompt"></span></div>
     <div class="callout danger"><strong>함정 파일:</strong> 영수증_스캔_06은 일부러 흐리게 만든 파일입니다. Codex가 추측으로 채우는지, '확인필요'로 표시하는지 확인하세요.</div>
@@ -421,7 +429,7 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;border:1px solid v
       <div><label class="field" for="cAccent">포인트 색상</label><div class="color"><input type="color" data-pick="cAccent"><input type="text" id="cAccent" data-field value="#4CAF2E"></div></div>
     </div>
     <div class="grid g2">
-      <div><label class="field" for="botName">챗봇 이름</label><input type="text" id="botName" data-field placeholder="예: 목포 통계비서 '유달이'"></div>
+      <div><label class="field" for="botName"><span class="bl-tag">빈칸</span>챗봇 이름</label><input type="text" id="botName" data-field data-blank placeholder="예: 목포 통계비서 '유달이'"></div>
       <div><label class="field" for="tone">말투 한 줄</label><input type="text" id="tone" data-field value="친절한 존댓말로, 숫자와 결론을 먼저 짧게"></div>
     </div>
     <div class="preview" id="preview">
@@ -441,6 +449,7 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;border:1px solid v
       <label class="check"><input type="checkbox" data-opt="motion"><span><b>부드러운 동작</b><small>입력 중 표시·숫자 카운트업</small></span></label>
       <label class="check"><input type="checkbox" data-opt="dark"><span><b>다크 모드 버튼</b><small>야간 상황판 테마</small></span></label>
     </div>
+    <label class="field" for="botFeature"><span class="bl-tag">빈칸</span>내가 꼭 넣고 싶은 기능 1가지</label><input type="text" id="botFeature" data-field data-blank placeholder="예: 전라남도 평균과 함께 비교하는 그래프 / 질문 예시 버튼을 우리 과 업무에 맞게">
     <h3>프롬프트 ① 요청문</h3>
     <div class="code big"><span class="label">COPY · 프롬프트 ① 만들기 (선택값 자동 반영)</span><button class="copy">복사</button><span id="botPrompt"></span></div>
     <label class="check"><input type="checkbox" data-save="b1"><span>http://localhost:3000 에서 챗봇이 열리고 '교육용 예시 데이터' 배지가 보인다</span></label>
@@ -468,8 +477,9 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;border:1px solid v
   <div class="hero"><svg class="wave" viewBox="0 0 420 140" aria-hidden="true"><path d="M0 90 C70 60 140 120 210 90 S350 60 420 85 V140 H0Z" fill="#0E6BA8" opacity=".25"/><path d="M0 108 C80 82 150 132 230 106 S360 84 420 104 V140 H0Z" fill="#4CAF2E" opacity=".28"/><path d="M0 124 C90 108 160 140 250 122 S370 110 420 122 V140 H0Z" fill="#0B2E4F" opacity=".18"/></svg><div class="eyebrow"><span class="tag p4">PRACTICE 3</span><span class="tag light">프롬프트 ③</span><span class="tag time">10분</span></div>
     <h2>함정 질문으로 검증하고 Vercel로 배포합니다</h2><p class="lead">모르는 통계를 지어내지 않는지가 가장 중요합니다. Codex가 테스트한 뒤, 직접도 한두 개 질문해 보세요.</p></div>
   <div class="content">
-    <label class="field" for="projName">배포 이름<small>영문 소문자·숫자·하이픈</small></label>
-    <input type="text" id="projName" data-field value="mokpo-stat-bot">
+    <label class="field" for="projName"><span class="bl-tag">빈칸</span>배포 이름<small>영문 소문자·숫자·하이픈</small></label>
+    <input type="text" id="projName" data-field data-blank placeholder="예: mokpo-stat-bot-hong">
+    <label class="field" for="myTest"><span class="bl-tag">빈칸</span>내가 만든 테스트 질문 1개</label><input type="text" id="myTest" data-field data-blank placeholder="예: 2023년 세대수 알려줘 / 목포 출생아 수가 가장 많았던 해는?">
     <div class="code"><span class="label">COPY · 프롬프트 ③ 검증·배포 (입력값 자동 반영)</span><button class="copy">복사</button><span id="deployPrompt"></span></div>
     <h3>직접 확인 <span id="testScore" style="font-size:17px;font-weight:900;color:var(--green);margin-left:6px">0 / 5</span></h3>
     <div id="tests"></div>
@@ -538,7 +548,7 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;border:1px solid v
 <script>
 (()=>{
 'use strict';
-const KEY='mokpoCodexWorkbookV3';
+const KEY='mokpoCodexWorkbookV4';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const ids=$$('.step').map(x=>x.id);
 let state={current:'s0',done:[],values:{},opts:null,tests:{}};
@@ -547,6 +557,10 @@ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1500)};
 const v=id=>{const el=$('#'+id);return el?el.value.trim():''};
 const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+// 빈칸: 채우면 초록 표시, 비어 있으면 노란 【빈칸】 표시
+const BL=(id,hint)=>{const x=v(id);return x?'\u0001'+x+'\u0002':'\u0003'+id+'\u0004【빈칸: '+hint+'】\u0002';};
+const toHTML=t=>esc(t).replace(/\u0001([\s\S]*?)\u0002/g,'<mark class="fill">$1</mark>').replace(/\u0003([^\u0004]*)\u0004([\s\S]*?)\u0002/g,'<mark class="blank" data-for="$1">$2</mark>');
+const put=(sel,t)=>{const el=$(sel);if(el)el.innerHTML=toHTML(t);};
 
 const PRESETS=[
  {n:'목포 바다',d:'남색·바다파랑·유달 초록',c:['#0B2E4F','#0E6BA8','#4CAF2E']},
@@ -582,17 +596,31 @@ const OPT_TEXT={
  dark:'다크 모드 전환 버튼'
 };
 
+function agentsPrompt(){
+  const base=$('#agentsBase').content.textContent.trim();
+  return `${base}
+
+5. 내가 추가한 지침
+${BL('agentsMy','내가 Codex에 꼭 지키게 하고 싶은 규칙')}`;}
+function promptP1a(){
+  return `이 폴더의 파일을 정리하려고 해.
+정리 방법 3가지를 제안해 줘.
+특히 ${BL('p1Need','정리할 때 가장 중요한 기준')}을(를) 고려해 줘.
+
+방법마다 폴더 구조 예시와 장단점을 짧게 보여 주고,
+아직 파일은 옮기지 마.`;}
 function promptP1(){
   return `${v('p1Pick')||'2'}번 방법으로 정리해 줘.
 
 - 먼저 원본 전체를 '_원본백업' 폴더에 복사
 - 삭제 없이 이동·이름 변경만
+- 추가 규칙: ${BL('p1Rule','추가로 원하는 정리 규칙')}
 - 끝나면 '폴더정리_결과.xlsx'와 정리된 폴더 구조를 보여 줘`;}
 function promptP2(){
-  return `현재 폴더에 영수증 스캔 이미지가 들어 있어. 모든 영수증을 읽어서 ${v('p2Dept')||'우리 부서'} 업무추진비 정산용 엑셀 파일 하나로 정리해 줘.
+  return `현재 폴더에 영수증 스캔 이미지가 들어 있어. 모든 영수증을 읽어서 ${BL('p2Dept','우리 부서명')} 업무추진비 정산용 엑셀 파일 하나로 정리해 줘.
 
 [시트1: 정산내역] 열 구성
-연번 / 사용일자(YYYY-MM-DD) / 가맹점명 / 사업자번호 / 분류(식비·회의비·교통비·소모품비·인쇄비 중 선택) /
+연번 / 사용일자(YYYY-MM-DD) / 가맹점명 / 사업자번호 / 분류(식비·회의비·교통비·소모품비·인쇄비·${BL('p2Cat','추가할 분류 항목')} 중 선택) /
 주요 품목 / 공급가액 / 부가세 / 합계금액 / 결제수단(법인카드·현금·계좌이체) /
 사용목적(사용목적_메모.txt 참고) / 원본파일명 / 비고(판독이 불확실하면 '확인필요'와 이유)
 
@@ -607,12 +635,12 @@ function promptP2(){
 - 다 만들면 총 건수와 총액을 알려 주고, 확인필요 항목은 따로 목록으로 보여 줘.`;}
 function promptP2b(){
   return `정산내역을 바탕으로 A4 가로 한 장짜리 '지출 증빙 목록' 시트를 추가해 줘.
-상단에 부서명(${v('p2Dept')||'○○과'}), 작성일, 작성자 칸,
+상단에 부서명(${BL('p2Dept','우리 부서명')}), 작성일, 작성자 칸,
 하단에 '위와 같이 지출하였음을 확인합니다.' 문구와 결재란(담당/팀장/과장)을 넣어 줘.
 인쇄 영역과 페이지 설정(A4 가로, 한 페이지에 맞춤)도 해 줘.`;}
 
 function botPrompt(){
-  const name=v('botName')||'목포시 행정통계 AI 챗봇';
+  const name=BL('botName','챗봇 이름');
   const p=v('cPrimary')||'#0B2E4F',s=v('cSecondary')||'#0E6BA8',a=v('cAccent')||'#4CAF2E';
   const def=['kpi','topicColor','badge','hero'];
   const opts=Object.keys(OPT_TEXT).filter(k=>state.opts?state.opts[k]:def.includes(k)).map(k=>OPT_TEXT[k]);
@@ -631,6 +659,7 @@ function botPrompt(){
    - 색상(CSS 변수): 주 ${p} / 보조 ${s} / 포인트 ${a}
    - 화면 요소: ${opts.join(', ')||'기본 카드형'}
    - 말투: ${v('tone')||'친절한 존댓말'}
+6. 추가 기능: ${BL('botFeature','내가 꼭 넣고 싶은 기능')}
 
 다 만들면 node server.js로 실행하고, 예시 질문 5개를 눌러 확인한 뒤 화면을 캡처해서 보여 줘.`;}
 function urlPrompt(){
@@ -642,30 +671,34 @@ function urlPrompt(){
 3. 내가 키를 넣으면 다시 실행해서 'KOSIS 실데이터' 배지가 뜨는지 확인해 줘.
    실패하면 원인만 알려 주고, 키 값은 화면에 출력하지 마.`;}
 function deployPrompt(){
-  const n=v('projName')||'mokpo-stat-bot';
+  const n=BL('projName','배포 이름');
   return `마무리해 줘.
 
-1. 아래 질문 5개로 직접 테스트하고 결과를 표로 보여 줘. 틀린 부분은 고쳐 줘.
+1. 아래 질문 6개로 직접 테스트하고 결과를 표로 보여 줘. 틀린 부분은 고쳐 줘.
    - 목포시 최근 5년 인구 추이
    - 고령인구 비율 변화 알려줘
    - 가구 수 알려줘
    - 목포시 관광객 수 알려줘 (← '확인 필요'로 답해야 정상)
    - 인구 2030년 전망 알려줘 (← 예측치를 만들면 안 됨)
+   - ${BL('myTest','내가 만든 테스트 질문')}
 2. 그다음 Vercel에 '${n}' 이름으로 배포하는 과정을 한 단계씩 같이 진행해 줘.
    .env는 올리지 말고, KOSIS_API_KEY는 Vercel 환경변수를 터미널 없이 Vercel 웹 대시보드에서 등록하는 경로로 알려줘.`;}
 
 function renderAll(){
-  $('#p1Prompt').textContent=promptP1();
-  $('#p2Prompt').textContent=promptP2();
-  $('#p2Prompt2').textContent=promptP2b();
-  $('#botPrompt').textContent=botPrompt();
-  $('#urlPrompt').textContent=urlPrompt();
-  $('#deployPrompt').textContent=deployPrompt();
+  put('#agentsPrompt',agentsPrompt());
+  put('#p1Step1',promptP1a());
+  put('#p1Prompt',promptP1());
+  put('#p2Prompt',promptP2());
+  put('#p2Prompt2',promptP2b());
+  put('#botPrompt',botPrompt());
+  put('#urlPrompt',urlPrompt());
+  put('#deployPrompt',deployPrompt());
+  $$('[data-blank]').forEach(el=>el.classList.toggle('ok',!!el.value.trim()));
   const p=v('cPrimary')||'#0B2E4F',s=v('cSecondary')||'#0E6BA8',a=v('cAccent')||'#4CAF2E';
   $('#pvHead').style.background=`linear-gradient(110deg,${p},${s})`;
   $('#pvLogo').textContent='MP';
   $('#pvLogo').style.background=a;
-  $('#pvName').textContent=v('botName')||'목포시 행정통계 챗봇';
+  $('#pvName').textContent=v('botName')||'챗봇 이름을 입력하세요';
   $('#pvUp2').style.color=a;$('#pvUp3').style.color=a;
   $$('[data-pick]').forEach(c=>{const t=$('#'+c.dataset.pick).value;if(/^#[0-9a-f]{6}$/i.test(t))c.value=t});
   $$('.preset').forEach(b=>b.classList.toggle('on',PRESETS[+b.dataset.preset].n===state.values.preset));
@@ -701,6 +734,8 @@ $$('[data-prev]').forEach(b=>b.onclick=()=>next(-1));
 document.addEventListener('input',e=>{if(e.target.matches('[data-pick]')){$('#'+e.target.dataset.pick).value=e.target.value;state.values.preset='';}if(e.target.matches('[data-field],[data-pick]'))capture()});
 document.addEventListener('change',e=>{if(e.target.matches('[data-save],[data-opt]'))capture()});
 $$('.copy').forEach(b=>b.onclick=async()=>{
+  const left=b.parentElement.querySelector('mark.blank');
+  if(left){const f=$('#'+left.dataset.for);toast('노란 빈칸을 먼저 채워 주세요');if(f){f.scrollIntoView({behavior:'smooth',block:'center'});f.focus();}return;}
   const box=b.parentElement.cloneNode(true);box.querySelectorAll('.label,.copy').forEach(x=>x.remove());
   const text=box.textContent.trim();
   try{await navigator.clipboard.writeText(text)}catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}
